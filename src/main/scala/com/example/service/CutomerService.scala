@@ -95,7 +95,7 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
     path("someException") {
       get {
         complete {
-          throw new SomeCustomException("This is a custom Exception")
+          throw new SomeCustomException("This is a custom Exception James")
         }
       }
     } ~
