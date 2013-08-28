@@ -3,17 +3,14 @@ package com.example.service
 import akka.actor.Actor
 import spray.routing._
 import spray.http._
-import spray.http.MediaTypes._
 import spray.routing.Directive.pimpApply
 import spray.routing.directives.CompletionMagnet.fromObject
-import com.example.model.Customer
 import spray.httpx.Json4sSupport
 import org.json4s.Formats
 import org.json4s.DefaultFormats
 import com.example.model.Customer
 import org.json4s.JsonAST.JObject
 import com.example.dal.CustomerDal
-import scala.concurrent.ExecutionContext.Implicits.global
 import shapeless._
 import spray.routing.directives.BasicDirectives._
 import spray.util.LoggingContext
@@ -23,6 +20,7 @@ import spray.util.LoggingContext
 class CustomerServiceActor extends Actor with CustomerService with AjaxService with CustomRejectionHandler {
 
   implicit def json4sFormats: Formats = DefaultFormats
+
   // the HttpService trait defines only one abstract member, which
   // connects the services environment to the enclosing actor or test
   def actorRefFactory = context
@@ -56,24 +54,26 @@ class SomeCustomException(msg: String) extends RuntimeException(msg)
 //http://kufli.blogspot.com/2013/08/sprayio-rest-service-api-versioning.html
 trait VersionDirectives {
   def versioning: Directive[String :: HNil] =
-    extract { ctx =>
-      val header = ctx.request.headers.find(_.name == "X-API-Version")
-      header match {
-        case Some(head) => head.value
-        case _ => "1" //default to 1
-      }
+    extract {
+      ctx =>
+        val header = ctx.request.headers.find(_.name == "X-API-Version")
+        header match {
+          case Some(head) => head.value
+          case _ => "1" //default to 1
+        }
     }
 }
 
 trait AjaxService extends HttpService {
   val ajaxRoutes =
-    path("search" / Segment) { query =>
-      get {
-        complete {
-          //Free text search implementation
-          s"success ${query}"
+    path("search" / Segment) {
+      query =>
+        get {
+          complete {
+            //Free text search implementation
+            s"success ${query}"
+          }
         }
-      }
     }
 }
 
@@ -81,15 +81,15 @@ trait AjaxService extends HttpService {
 trait CustomerService extends HttpService with Json4sSupport with UserAuthentication {
 
   //http://kufli.blogspot.com/2013/08/sprayio-rest-service-api-versioning.html
-  val Version = PathMatcher("""v([0-9]+)""".r)
+  val Version = PathMatcher( """v([0-9]+)""".r)
     .flatMap {
-      case vString :: HNil => {
-        try Some(Integer.parseInt(vString) :: HNil)
-        catch {
-          case _: NumberFormatException => Some(1 :: HNil) //default to version 1
-        }
+    case vString :: HNil => {
+      try Some(Integer.parseInt(vString) :: HNil)
+      catch {
+        case _: NumberFormatException => Some(1 :: HNil) //default to version 1
       }
     }
+  }
 
   val customerRoutes =
     path("someException") {
@@ -101,30 +101,47 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
     } ~
       path("addCustomer") {
         post {
-          authenticate(authenticateUser) { user =>
-            entity(as[JObject]) { customerObj =>
-              complete {
-                val customer = customerObj.extract[Customer]
-                val customerDal = new CustomerDal
-                val id = customerDal.saveCustomer(customer)
-                id.toString()
+          authenticate(authenticateUser) {
+            user =>
+              entity(as[JObject]) {
+                customerObj =>
+                  complete {
+                    val customer = customerObj.extract[Customer]
+                    val customerDal = new CustomerDal
+                    val id = customerDal.saveCustomer(customer)
+                    id.toString()
+                  }
               }
-            }
           }
         }
       } ~
-      path("getCustomer" / Segment) { customerId =>
-        get {
-          authenticate(authenticateUser) { user =>
-            {
-              complete {
-                //get customer from db using customerId as Key
-                val customerDal = new CustomerDal
-                val customer = customerDal.findCustomer(customerId)
-                customer
+      path("getCustomer" / Segment) {
+        customerId =>
+          get {
+            authenticate(authenticateUser) {
+              user => {
+                complete {
+                  //get customer from db using customerId as Key
+                  val customerDal = new CustomerDal
+                  val customer = customerDal.findCustomer(customerId)
+                  customer
+                }
               }
             }
           }
-        }
+      } ~
+      path("getCust" / Segment) {
+        customerId =>
+          get {
+            authenticate(authenticateUser) {
+              user => {
+                complete {
+                  val customer = Customer(firstName = "James",
+                    lastName = "Hoare", _id = Some(customerId))
+                  customer //return customer obj
+                }
+              }
+            }
+          }
       }
 }
