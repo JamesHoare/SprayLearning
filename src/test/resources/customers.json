@@ -1,10 +1,5 @@
-{
-    "firstName": "James",
-    "lastName": "Hoare",
-    "age": 37,
-    "title": "mr",
-    "status": "eip"
-}
+
+{ "id": 1, "firstName": "james", "lastName": "Hoare", "age" : 37, "title" : "mr", "status" : "eip" }
 
 
 
