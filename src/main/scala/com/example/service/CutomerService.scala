@@ -14,6 +14,8 @@ import com.example.dal.CustomerDal
 import shapeless._
 import spray.routing.directives.BasicDirectives._
 import spray.util.LoggingContext
+import scala.concurrent.ExecutionContext
+import ExecutionContext.Implicits.global
 
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
