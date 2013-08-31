@@ -1,28 +1,30 @@
 
-import com.github.tlrx.elasticsearch.test.annotations.ElasticsearchClient;
-import com.github.tlrx.elasticsearch.test.annotations.ElasticsearchIndex;
-import com.github.tlrx.elasticsearch.test.annotations.ElasticsearchNode;
+import com.github.tlrx.elasticsearch.test.annotations.*;
 import com.github.tlrx.elasticsearch.test.support.junit.runners.ElasticsearchRunner;
+import io.searchbox.client.JestClient;
+import io.searchbox.client.JestClientFactory;
+import io.searchbox.client.config.ClientConfig;
 import org.elasticsearch.action.index.IndexResponse;
+import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
 import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.index.VersionType;
 import org.elasticsearch.index.engine.VersionConflictEngineException;
+import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
+import static com.github.tlrx.elasticsearch.test.annotations.ElasticsearchMappingField.Store.*;
 import static org.junit.Assert.*;
 
 import java.io.IOException;
 
 /**
- *
  * Basic Test cases for working with ElasticSearch embedded
- *
+ * <p/>
  * User: jameshoare
  * Date: 31/08/2013
- *
  */
 @RunWith(ElasticsearchRunner.class)
 @ElasticsearchNode
@@ -36,7 +38,7 @@ public class ElasticSearchTest {
     public void indexInternalVersion() throws IOException {
         XContentBuilder builder = JsonXContent.contentBuilder();
 
-        // Book #1
+        // customer #1
         builder.startObject()
                 .field("firstName", "James")
                 .field("lastName", "Hoare")
@@ -54,7 +56,7 @@ public class ElasticSearchTest {
         builder = JsonXContent.contentBuilder().startObject()
                 .field("firstName", "Jess")
                 .field("lastName", "Hoare")
-                .field("status","EIP")
+                .field("status", "EIP")
                 .endObject();
 
 
@@ -143,7 +145,7 @@ public class ElasticSearchTest {
         builder = JsonXContent.contentBuilder().startObject()
                 .field("firstName", "James")
                 .field("lastName", "Hoare")
-                .field("status","EIP")
+                .field("status", "EIP")
                 .endObject();
 
         // Update customer #2 without version control
@@ -230,5 +232,53 @@ public class ElasticSearchTest {
             assertNotNull(e);
             assertEquals(startVersion + 11, e.getCurrentVersion());
         }
+    }
+
+    @Test
+    @ElasticsearchIndex(indexName = "customers", forceCreate = true,
+            mappings = {@ElasticsearchMapping(typeName = "customer",
+                    properties = {
+                            @ElasticsearchMappingField(name = "firstName", store = Yes, type = ElasticsearchMappingField.Types.String),
+                            @ElasticsearchMappingField(name = "lastName", store = ElasticsearchMappingField.Store.Yes, type = ElasticsearchMappingField.Types.String),
+                            @ElasticsearchMappingField(name = "age", store = ElasticsearchMappingField.Store.Yes, type = ElasticsearchMappingField.Types.Integer),
+                            @ElasticsearchMappingField(name = "title", store = ElasticsearchMappingField.Store.Yes, type = ElasticsearchMappingField.Types.String),
+                            @ElasticsearchMappingField(name = "status", store = ElasticsearchMappingField.Store.Yes, type = ElasticsearchMappingField.Types.String)
+                    })
+            })
+    @ElasticsearchBulkRequest(dataFile = "customers.json")
+    public void searchCustomers() throws IOException {
+
+
+      /*  // Configuration
+        ClientConfig clientConfig = new ClientConfig.Builder("http://localhost:9200").multiThreaded(true).build();
+
+        // Construct a new Jest client according to configuration via factory
+        JestClientFactory factory = new JestClientFactory();
+        factory.setClientConfig(clientConfig);
+        JestClient client = factory.getObject();*/
+
+
+
+       /* XContentBuilder builder = JsonXContent.contentBuilder();
+
+        // customer #1
+        builder.startObject()
+                .field("firstName", "James")
+                .field("lastName", "Hoare")
+                .field("age",37)
+                .field("title","mr")
+                .field("status","eip")
+                .endObject();
+
+        // Index customer #1
+        client.prepareIndex("customers", "customer")
+                .setSource(builder)
+                .execute();*/
+
+
+        SearchResponse response = client.prepareSearch("customers").setQuery(QueryBuilders.matchAllQuery()).execute().actionGet();
+        assertEquals(1, response.getHits().totalHits());
+
+
     }
 }
