@@ -1,9 +1,8 @@
 
+
 import com.github.tlrx.elasticsearch.test.annotations.*;
 import com.github.tlrx.elasticsearch.test.support.junit.runners.ElasticsearchRunner;
-import io.searchbox.client.JestClient;
-import io.searchbox.client.JestClientFactory;
-import io.searchbox.client.config.ClientConfig;
+import io.searchbox.annotations.JestId;
 import org.elasticsearch.action.index.IndexResponse;
 import org.elasticsearch.action.search.SearchResponse;
 import org.elasticsearch.client.Client;
@@ -11,6 +10,7 @@ import org.elasticsearch.common.xcontent.XContentBuilder;
 import org.elasticsearch.common.xcontent.json.JsonXContent;
 import org.elasticsearch.index.VersionType;
 import org.elasticsearch.index.engine.VersionConflictEngineException;
+import org.elasticsearch.index.query.FilterBuilders;
 import org.elasticsearch.index.query.QueryBuilders;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -245,21 +245,13 @@ public class ElasticSearchTest {
                             @ElasticsearchMappingField(name = "status", store = ElasticsearchMappingField.Store.Yes, type = ElasticsearchMappingField.Types.String)
                     })
             })
-    @ElasticsearchBulkRequest(dataFile = "customers.json")
-    public void searchCustomers() throws IOException {
-
-
-      /*  // Configuration
-        ClientConfig clientConfig = new ClientConfig.Builder("http://localhost:9200").multiThreaded(true).build();
-
-        // Construct a new Jest client according to configuration via factory
-        JestClientFactory factory = new JestClientFactory();
-        factory.setClientConfig(clientConfig);
-        JestClient client = factory.getObject();*/
+    //@ElasticsearchBulkRequest(dataFile = "customers.json")
+    public void searchCustomers() throws Exception {
 
 
 
-       /* XContentBuilder builder = JsonXContent.contentBuilder();
+
+        XContentBuilder builder = JsonXContent.contentBuilder();
 
         // customer #1
         builder.startObject()
@@ -270,15 +262,129 @@ public class ElasticSearchTest {
                 .field("status","eip")
                 .endObject();
 
-        // Index customer #1
-        client.prepareIndex("customers", "customer")
+        IndexResponse indexRes = client.prepareIndex("customers", "customer", "1")
                 .setSource(builder)
-                .execute();*/
+                .execute()
+                .actionGet();
+
+        assertEquals("First document version must be 1", 1, indexRes.getVersion());
 
 
-        SearchResponse response = client.prepareSearch("customers").setQuery(QueryBuilders.matchAllQuery()).execute().actionGet();
+        SearchResponse response = client.prepareSearch("customers")
+                .setQuery(QueryBuilders.matchAllQuery())
+                .setFilter(FilterBuilders.termFilter("firstName", "James"))
+                .execute()
+                .actionGet();
+        assertEquals(1L, response.getHits().totalHits());
+
+
+        response = client.prepareSearch("customers").setQuery(QueryBuilders.matchAllQuery()).execute().actionGet();
         assertEquals(1, response.getHits().totalHits());
 
 
+        // Configuration
+        /*ClientConfig clientConfig = new ClientConfig.Builder("http://localhost:9200").multiThreaded(true).build();
+
+        // Construct a new Jest client according to configuration via factory
+        JestClientFactory factory = new JestClientFactory();
+        factory.setClientConfig(clientConfig);
+        JestClient client = factory.getObject();
+*/
+
+
+
+       /* Customer c = new Customer();
+        c.setAge(37);
+        c.setFirstName("James");
+        c.setLastName("Hoare");
+        c.setStatus("eip");
+        c.setTitle("mr");
+
+
+
+        Bulk bulk = new Bulk.Builder()
+                .defaultIndex("customers")
+                .defaultType("customer")
+                .addAction(new Index.Builder(c).build())
+
+                .build();
+
+
+        // Index customer #1
+        client.execute(bulk);
+
+
+        SearchSourceBuilder searchSourceBuilder = new SearchSourceBuilder();
+        searchSourceBuilder.query(QueryBuilders.matchAllQuery());
+
+        Search search = new Search.Builder(searchSourceBuilder.toString())
+                .addIndex("customers")
+                .addType("customer")
+                .build();
+
+        JestResult result = client.execute(search);
+        result.getJsonString();
+
+*/
+
+
+
+
+
+    }
+}
+
+
+class Customer {
+
+    // JestId is optional, use when you want to set a property as ElasticSearch index id
+    @JestId
+    private Long customerid;
+
+    private String firstName;
+    private String lastName;
+    private Integer age;
+    private String title;
+    private String status;
+
+
+    String getFirstName() {
+        return firstName;
+    }
+
+    void setFirstName(String firstName) {
+        this.firstName = firstName;
+    }
+
+    String getLastName() {
+        return lastName;
+    }
+
+    void setLastName(String lastName) {
+        this.lastName = lastName;
+    }
+
+    String getTitle() {
+        return title;
+    }
+
+    void setTitle(String title) {
+        this.title = title;
+    }
+
+    Integer getAge() {
+        return age;
+    }
+
+    void setAge(Integer age) {
+        this.age = age;
+    }
+
+    String getStatus() {
+        return status;
+    }
+
+    void setStatus(String status) {
+        this.status = status;
     }
 }
