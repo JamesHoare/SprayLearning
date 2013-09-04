@@ -17,6 +17,8 @@ libraryDependencies ++= Seq(
   "com.typesafe.akka"   %%  "akka-actor"    	% "2.2.1",
   "com.typesafe.akka"   %%  "akka-testkit"  	% "2.2.1" % "test",
   "org.specs2"          %%  "specs2"        	% "1.14" % "test",
+  "org.scalatest" % "scalatest_2.10" % "2.0.M6-SNAP36" % "test",
+  "org.mockito" % "mockito-all" % "1.9.5" % "test",
   "org.json4s" 			%% 	"json4s-native" 	% "3.2.5",
   "org.mongodb" 		%% "casbah" 			% "2.6.2",
   "com.typesafe" 		%% "scalalogging-slf4j" % "1.0.1",
@@ -24,8 +26,7 @@ libraryDependencies ++= Seq(
   "org.slf4j" 			% "log4j-over-slf4j" 	% "1.7.1",
   "org.elasticsearch"   % "elasticsearch"       % "0.90.3",
   "com.github.tlrx"     % "elasticsearch-test"  % "0.0.9",
-  "io.searchbox"        % "jest"                % "0.0.4",
-  "org.scalastic"       %% "scalastic"          % "0.90.2",
+  "com.sksamuel.elastic4s" % "elastic4s_2.10" % "0.90.3.0",
   "ch.qos.logback" 		% "logback-classic" 	% "1.0.3"
 )
 

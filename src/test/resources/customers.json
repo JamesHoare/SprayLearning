@@ -1,5 +1,6 @@
-
-{ "id": 1, "firstName": "james", "lastName": "Hoare", "age" : 37, "title" : "mr", "status" : "eip" }
-
-
-
+{
+    "name": "galaxy s4",
+    "brand": "samsung",
+    "colors": [ "Black", "White"],
+    "better-than-apple": "of course"
+}

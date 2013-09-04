@@ -10,14 +10,13 @@ import org.json4s.Formats
 import org.json4s.DefaultFormats
 import com.example.model.Customer
 import org.json4s.JsonAST.JObject
-import com.example.dal.{SearchClientFactory, CustomerDal}
+import com.example.dal.{CustomerDal}
 import shapeless._
 import spray.routing.directives.BasicDirectives._
 import spray.util.LoggingContext
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
-import io.searchbox.client.JestClientFactory
-import io.searchbox.core.{Index, Bulk}
+
 
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
@@ -82,7 +81,7 @@ trait AjaxService extends HttpService {
 }
 
 // this trait defines our service behavior independently from the service actor
-trait CustomerService extends HttpService with Json4sSupport with UserAuthentication with SearchClientFactory  {
+trait CustomerService extends HttpService with Json4sSupport with UserAuthentication   {
 
   //http://kufli.blogspot.com/2013/08/sprayio-rest-service-api-versioning.html
   val Version = PathMatcher( """v([0-9]+)""".r)
@@ -143,13 +142,13 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
                   val customer = Customer(firstName = "James",
                     lastName = "Hoare", _id = Some(customerId))
                   // get the search client
-                  val bulk = new Bulk.Builder()
+              /*    val bulk = new Bulk.Builder()
                     .defaultIndex("customers")
                     .defaultType("customer")
                     .addAction(new Index.Builder(customer).build())
                     .build()
 
-                    getSearchClient.execute(bulk);
+                    getSearchClient.execute(bulk);*/
 
                   customer //return customer obj
                 }
