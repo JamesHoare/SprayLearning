@@ -14,8 +14,8 @@ libraryDependencies ++= Seq(
   "io.spray"            %   "spray-can"     	% "1.2-M8",
   "io.spray"            %   "spray-routing" 	% "1.2-M8",
   "io.spray"            %   "spray-testkit" 	% "1.2-M8" % "test",
-  "com.typesafe.akka"   %%  "akka-actor"    	% "2.2.1",
-  "com.typesafe.akka"   %%  "akka-testkit"  	% "2.2.1" % "test",
+  "com.typesafe.akka"   %%  "akka-actor"    	% "2.2.0-RC1",
+  "com.typesafe.akka"   %%  "akka-testkit"  	% "2.2.0-RC1" % "test",
   "org.specs2"          %%  "specs2"        	% "1.14" % "test",
   "org.scalatest" % "scalatest_2.10" % "2.0.M6-SNAP36" % "test",
   "org.mockito" % "mockito-all" % "1.9.5" % "test",
@@ -25,7 +25,6 @@ libraryDependencies ++= Seq(
   "org.slf4j" 			% "slf4j-api" 			% "1.7.1",
   "org.slf4j" 			% "log4j-over-slf4j" 	% "1.7.1",
   "org.elasticsearch"   % "elasticsearch"       % "0.90.3",
-  "com.github.tlrx"     % "elasticsearch-test"  % "0.0.9",
   "com.sksamuel.elastic4s" % "elastic4s_2.10" % "0.90.3.0",
   "ch.qos.logback" 		% "logback-classic" 	% "1.0.3"
 )

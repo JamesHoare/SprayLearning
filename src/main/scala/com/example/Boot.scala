@@ -2,8 +2,8 @@ package com.example
 
 import akka.actor.{ ActorSystem, Props }
 import akka.io.IO
-import spray.can.Http
 import com.example.service.CustomerServiceActor
+import spray.can.Http
 
 object Boot extends App {
 

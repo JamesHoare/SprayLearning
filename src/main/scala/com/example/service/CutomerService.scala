@@ -6,8 +6,7 @@ import spray.http._
 import spray.routing.Directive.pimpApply
 import spray.routing.directives.CompletionMagnet.fromObject
 import spray.httpx.Json4sSupport
-import org.json4s.Formats
-import org.json4s.DefaultFormats
+import org.json4s.{MappingException, Formats, DefaultFormats}
 import com.example.model.Customer
 import org.json4s.JsonAST.JObject
 import com.example.dal.{CustomerDal}
@@ -20,7 +19,7 @@ import ExecutionContext.Implicits.global
 
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
-class CustomerServiceActor extends Actor  with CustomerService with AjaxService with CustomRejectionHandler  {
+class CustomerServiceActor extends Actor with CustomerService with AjaxService with CustomRejectionHandler {
 
   implicit def json4sFormats: Formats = DefaultFormats
 
@@ -49,7 +48,10 @@ class CustomerServiceActor extends Actor  with CustomerService with AjaxService 
         log.debug("%s %n%s %n%s".format(e.getMessage, e.getStackTraceString, e.getCause))
         ctx.complete(500, e.getMessage)
       }
+
     }
+
+
 }
 
 class SomeCustomException(msg: String) extends RuntimeException(msg)
@@ -81,7 +83,7 @@ trait AjaxService extends HttpService {
 }
 
 // this trait defines our service behavior independently from the service actor
-trait CustomerService extends HttpService with Json4sSupport with UserAuthentication   {
+trait CustomerService extends HttpService with Json4sSupport with UserAuthentication {
 
   //http://kufli.blogspot.com/2013/08/sprayio-rest-service-api-versioning.html
   val Version = PathMatcher( """v([0-9]+)""".r)
@@ -141,14 +143,7 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
                 complete {
                   val customer = Customer(firstName = "James",
                     lastName = "Hoare", _id = Some(customerId))
-                  // get the search client
-              /*    val bulk = new Bulk.Builder()
-                    .defaultIndex("customers")
-                    .defaultType("customer")
-                    .addAction(new Index.Builder(customer).build())
-                    .build()
 
-                    getSearchClient.execute(bulk);*/
 
                   customer //return customer obj
                 }
