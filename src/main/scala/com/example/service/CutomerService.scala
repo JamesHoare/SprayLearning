@@ -3,19 +3,23 @@ package com.example.service
 import akka.actor.Actor
 import spray.routing._
 import spray.http._
+import spray.http.MediaTypes._
 import spray.routing.Directive.pimpApply
 import spray.routing.directives.CompletionMagnet.fromObject
+import com.example.model.Customer
 import spray.httpx.Json4sSupport
 import org.json4s.{MappingException, Formats, DefaultFormats}
 import com.example.model.Customer
 import org.json4s.JsonAST.JObject
-import com.example.dal.{CustomerDal}
+import com.example.dal.CustomerDal
+import scala.concurrent.ExecutionContext.Implicits.global
 import shapeless._
 import spray.routing.directives.BasicDirectives._
 import spray.util.LoggingContext
-import scala.concurrent.ExecutionContext
-import ExecutionContext.Implicits.global
 
+//import org.json4s.`package`.MappingException
+
+case class ReponseError(errorCode: String, errorMessage: String) {}
 
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
@@ -40,18 +44,21 @@ class CustomerServiceActor extends Actor with CustomerService with AjaxService w
 
   implicit def myExceptionHandler(implicit log: LoggingContext) =
     ExceptionHandler.apply {
+      case m: MappingException => {
+        respondWithMediaType(`application/json`) {
+          val errorMsg = ReponseError("MalformedBody", m.getMessage)
+          ctx => ctx.complete(415, errorMsg)
+        }
+      }
       case e: SomeCustomException => ctx => {
-        log.debug("%s %n%s %n%s".format(e.getMessage, e.getStackTraceString, e.getCause))
-        ctx.complete(404, e.getMessage)
+        val errorMsg = ReponseError("BadRequest", e.getMessage)
+        ctx.complete(400, errorMsg)
       }
       case e: Exception => ctx => {
-        log.debug("%s %n%s %n%s".format(e.getMessage, e.getStackTraceString, e.getCause))
-        ctx.complete(500, e.getMessage)
+        val errorMsg = ReponseError("InternalServerError", e.getMessage)
+        ctx.complete(500, errorMsg)
       }
-
     }
-
-
 }
 
 class SomeCustomException(msg: String) extends RuntimeException(msg)
@@ -100,7 +107,7 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
     path("someException") {
       get {
         complete {
-          throw new SomeCustomException("This is a custom Exception James")
+          throw new SomeCustomException("This is a custom Exception")
         }
       }
     } ~
@@ -130,22 +137,6 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
                   val customerDal = new CustomerDal
                   val customer = customerDal.findCustomer(customerId)
                   customer
-                }
-              }
-            }
-          }
-      } ~
-      path("getCust" / Segment) {
-        customerId =>
-          get {
-            authenticate(authenticateUser) {
-              user => {
-                complete {
-                  val customer = Customer(firstName = "James",
-                    lastName = "Hoare", _id = Some(customerId))
-
-
-                  customer //return customer obj
                 }
               }
             }
