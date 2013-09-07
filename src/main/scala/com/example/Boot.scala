@@ -1,11 +1,13 @@
 package com.example
 
-import akka.actor.{ ActorSystem, Props }
+import akka.actor.{ActorSystem, Props}
 import akka.io.IO
 import com.example.service.CustomerServiceActor
 import spray.can.Http
+import com.example.search.SearchService
 
-object Boot extends App {
+
+object Boot extends App with SearchService {
 
   // we need an ActorSystem to host our application in
   implicit val system = ActorSystem("on-spray-can")
@@ -15,4 +17,10 @@ object Boot extends App {
 
   // start a new HTTP server on port 8080 with our service actor as the handler
   IO(Http) ! Http.Bind(service, interface = "localhost", port = 8080)
+
+  setUpSearchService
+
+
+
+
 }

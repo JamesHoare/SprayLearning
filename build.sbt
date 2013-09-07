@@ -26,6 +26,7 @@ libraryDependencies ++= Seq(
   "org.slf4j" 			% "log4j-over-slf4j" 	% "1.7.1",
   "org.elasticsearch"   % "elasticsearch"       % "0.90.3",
   "com.sksamuel.elastic4s" % "elastic4s_2.10" % "0.90.3.0",
+  "org.scalastic" %% "scalastic" % "0.90.2",
   "ch.qos.logback" 		% "logback-classic" 	% "1.0.3"
 )
 
