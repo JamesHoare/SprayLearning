@@ -12,6 +12,7 @@ resolvers ++= Seq(
 
 libraryDependencies ++= Seq(
   "io.spray"            %   "spray-can"     	% "1.2-M8",
+  "io.spray"            % "spray-servlet"       % "1.2-M8",
   "io.spray"            %   "spray-routing" 	% "1.2-M8",
   "io.spray"            %   "spray-testkit" 	% "1.2-M8" % "test",
   "com.typesafe.akka"   %%  "akka-actor"    	% "2.2.0-RC1",
@@ -27,7 +28,21 @@ libraryDependencies ++= Seq(
   "org.elasticsearch"   % "elasticsearch"       % "0.90.3",
   "com.sksamuel.elastic4s" % "elastic4s_2.10" % "0.90.3.0",
   "org.scalastic" %% "scalastic" % "0.90.2",
+  "org.eclipse.jetty" % "jetty-webapp" % "8.1.10.v20130312" % "container",
+  "org.eclipse.jetty.orbit" % "javax.servlet" % "3.0.0.v201112011016" % "container" artifacts Artifact("javax.servlet", "jar", "jar"),
   "ch.qos.logback" 		% "logback-classic" 	% "1.0.3"
 )
+
+seq(webSettings: _*)
+
+
+
+
+
+
+
+
+
+
 
 

@@ -29,8 +29,8 @@ class IndexTest extends FlatSpec with MockitoSugar with ElasticSugar {
   it should "index from object source when used" in {
 
     case class Phone(name: String, brand: String)
-    val iPhone = new Phone("iPhone", "apple")
-    val one = new Phone("One", "HTC")
+    val iPhone = Phone("iPhone", "apple")
+    val one = Phone("One", "HTC")
 
     client.execute(
       index into "electronics/phone" source ObjectSource(iPhone),
