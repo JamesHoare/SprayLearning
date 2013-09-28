@@ -25,8 +25,8 @@ case class ReponseError(errorCode: String, errorMessage: String) {}
 // we want to be able to test it independently, without having to spin up an actor
 class CustomerServiceActor extends Actor with CustomerService with AjaxService with CustomRejectionHandler {
 
-  implicit def json4sFormats: Formats = DefaultFormats
 
+  implicit def json4sFormats: Formats = DefaultFormats
   // the HttpService trait defines only one abstract member, which
   // connects the services environment to the enclosing actor or test
   def actorRefFactory = context
@@ -91,6 +91,8 @@ trait AjaxService extends HttpService {
 
 // this trait defines our service behavior independently from the service actor
 trait CustomerService extends HttpService with Json4sSupport with UserAuthentication {
+
+
 
   //http://kufli.blogspot.com/2013/08/sprayio-rest-service-api-versioning.html
   val Version = PathMatcher( """v([0-9]+)""".r)

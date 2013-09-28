@@ -5,11 +5,20 @@ import spray.testkit.Specs2RouteTest
 import spray.http._
 import StatusCodes._
 import spray.routing.HttpService
+import com.example.service.CustomerService
+import org.json4s.{DefaultFormats, Formats}
 
+
+/**
+ * specs2 testing
+ */
 class CustomerExampleSpec extends Specification with Specs2RouteTest with HttpService {
+
+
   def actorRefFactory = system // connect the DSL to the test ActorSystem
 
-  val smallRoute =
+
+  val customerRoute =
     get {
       path("getCustomer") {
         complete {
@@ -28,25 +37,25 @@ class CustomerExampleSpec extends Specification with Specs2RouteTest with HttpSe
   "The service" should {
 
     "return a greeting for GET requests to the root path" in {
-      Get("/getCustomer") ~> smallRoute ~> check {
+      Get("/getCustomer") ~> customerRoute ~> check {
         entityAs[String] must contain("Say hello")
       }
     }
 
     "return a 'Hi!' response for GET requests to /greeting" in {
-      Get("/greeting") ~> smallRoute ~> check {
+      Get("/greeting") ~> customerRoute ~> check {
         entityAs[String] === "Hi!"
       }
     }
 
     "leave GET requests to other paths unhandled" in {
-      Get("/addCustomer") ~> smallRoute ~> check {
+      Get("/addCustomer") ~> customerRoute ~> check {
         handled must beFalse
       }
     }
 
     "return a MethodNotAllowed error for PUT requests to the root path" in {
-      Put() ~> sealRoute(smallRoute) ~> check {
+      Put() ~> sealRoute(customerRoute) ~> check {
         status === MethodNotAllowed
         entityAs[String] === "HTTP method not allowed, supported methods: GET"
       }
