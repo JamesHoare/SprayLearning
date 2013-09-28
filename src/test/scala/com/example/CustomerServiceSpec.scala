@@ -5,8 +5,7 @@ import spray.testkit.Specs2RouteTest
 import spray.http._
 import StatusCodes._
 import spray.routing.HttpService
-import com.example.service.CustomerService
-import org.json4s.{DefaultFormats, Formats}
+import concurrent.duration._
 
 
 /**
@@ -16,6 +15,9 @@ class CustomerExampleSpec extends Specification with Specs2RouteTest with HttpSe
 
 
   def actorRefFactory = system // connect the DSL to the test ActorSystem
+
+  val routeTestTimeout = RouteTestTimeout(2 second span)
+
 
 
   val customerRoute =

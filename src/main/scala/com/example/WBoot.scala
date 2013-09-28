@@ -11,7 +11,7 @@ import spray.servlet.WebBoot
  * Project: default-7846f0
  *
  */
-class WBoot extends WebBoot {
+object WBoot extends WebBoot {
 
   // we need an ActorSystem to host our application in
   val system = ActorSystem("example")
