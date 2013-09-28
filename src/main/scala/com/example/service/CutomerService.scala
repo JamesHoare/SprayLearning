@@ -141,5 +141,12 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
               }
             }
           }
+      } ~
+      path("getCustomerGreeting") {
+          get {
+              complete {
+                "Hello James"
+              }
+          }
       }
 }

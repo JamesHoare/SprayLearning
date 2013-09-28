@@ -14,6 +14,9 @@ import scalastic.elasticsearch.Indexer
 trait SearchService {
 
 
+
+
+
   def setUpSearchService: Unit = {
     val indexType = "customer"
 
