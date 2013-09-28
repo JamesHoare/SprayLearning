@@ -26,6 +26,8 @@ libraryDependencies ++= Seq(
   "org.slf4j" 			% "slf4j-api" 			% "1.7.1",
   "org.slf4j" 			% "log4j-over-slf4j" 	% "1.7.1",
   "org.elasticsearch"   % "elasticsearch"       % "0.90.3",
+  "com.typesafe.slick" %% "slick" % "1.0.1",
+      "mysql" % "mysql-connector-java" % "5.1.25",
   "com.sksamuel.elastic4s" % "elastic4s_2.10" % "0.90.3.0",
   "org.scalastic" %% "scalastic" % "0.90.2",
   "org.eclipse.jetty" % "jetty-webapp" % "8.1.10.v20130312" % "container",

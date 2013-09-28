@@ -6,10 +6,10 @@ import spray.http._
 import spray.http.MediaTypes._
 import spray.routing.Directive.pimpApply
 import spray.routing.directives.CompletionMagnet.fromObject
-import com.example.model.Customer
+import com.example.domain.Customer
 import spray.httpx.Json4sSupport
 import org.json4s.{MappingException, Formats, DefaultFormats}
-import com.example.model.Customer
+import com.example.domain.Customer
 import org.json4s.JsonAST.JObject
 import com.example.dal.CustomerDal
 import scala.concurrent.ExecutionContext.Implicits.global

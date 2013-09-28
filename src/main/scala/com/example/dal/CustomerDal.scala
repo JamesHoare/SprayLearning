@@ -1,6 +1,6 @@
 package com.example.dal
 import com.mongodb.casbah.Imports._
-import com.example.model.Customer
+import com.example.domain.Customer
 
 class CustomerDal {
 

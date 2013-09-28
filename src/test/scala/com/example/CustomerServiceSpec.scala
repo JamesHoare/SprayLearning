@@ -34,6 +34,7 @@ class CustomerExampleSpec extends Specification with Specs2RouteTest with HttpSe
         path("greeting") {
           complete("Hi!")
         }
+
     }
 
   "The service" should {
