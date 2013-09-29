@@ -1,4 +1,5 @@
-package com.example.service
+package com.example.rest
+
 import spray.routing._
 import spray.http._
 import StatusCodes._

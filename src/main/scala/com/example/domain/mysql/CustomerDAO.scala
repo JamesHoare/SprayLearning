@@ -3,6 +3,9 @@ package com.example.mysql
 import com.example.configuration.CustomerSystemConfiguration
 import scala.slick.jdbc.meta.MTable
 import scala.slick.session.Database
+import com.example.domain.Customers
+import scala.slick.driver.MySQLDriver.simple.Database.threadLocalSession
+import scala.slick.driver.MySQLDriver.simple._
 
 /**
  *

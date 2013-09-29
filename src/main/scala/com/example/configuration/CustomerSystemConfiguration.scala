@@ -19,13 +19,13 @@ trait CustomerSystemConfiguration {
   val config = ConfigFactory.load()
 
   /** Host name/address to start service on. */
-  lazy val serviceHost = Try(config.getString("service.host")).getOrElse("localhost")
+  lazy val serviceHost = Try(config.getString("service.host")).getOrElse("127.0.0.1")
 
   /** Port to start service on. */
   lazy val servicePort = Try(config.getInt("service.port")).getOrElse(8080)
 
   /** Database host name/address. */
-  lazy val dbHost = Try(config.getString("db.host")).getOrElse("localhost")
+  lazy val dbHost = Try(config.getString("db.host")).getOrElse("127.0.0.1")
 
   /** Database host port number. */
   lazy val dbPort = Try(config.getInt("db.port")).getOrElse(3306)

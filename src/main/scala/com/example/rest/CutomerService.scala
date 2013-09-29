@@ -1,4 +1,4 @@
-package com.example.service
+package com.example.rest
 
 import akka.actor.Actor
 import spray.routing._

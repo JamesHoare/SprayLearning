@@ -1,8 +1,8 @@
-package com.example
+package com.example.bootstrap
 
 import akka.actor.{ActorSystem, Props}
-import com.example.service.CustomerServiceActor
 import spray.servlet.WebBoot
+import com.example.rest.CustomerServiceActor
 
 /**
  *
