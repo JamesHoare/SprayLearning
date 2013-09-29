@@ -30,9 +30,7 @@ case class SomeCustomException(msg: String) extends RuntimeException(msg) {}
 // we want to be able to test it independently, without having to spin up an actor
 class CustomerServiceActor extends Actor with CustomerService with AjaxService with CustomRejectionHandler  {
 
-  //by specifying this, no need to explicitly add expected mediatype to each path
-  //respondWithMediaType(MediaTypes.`application/json`)
-  implicit def json4sFormats: Formats = DefaultFormats
+
   // the HttpService trait defines only one abstract member, which
   // connects the services environment to the enclosing actor or test
   def actorRefFactory = context
@@ -105,6 +103,10 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
   //db service
   val customerService = new CustomerDAO
 
+  //by specifying this, no need to explicitly add expected mediatype to each path
+  //respondWithMediaType(MediaTypes.`application/json`)
+  implicit def json4sFormats: Formats = DefaultFormats
+
 
 
   val Version = PathMatcher( """v([0-9]+)""".r)
@@ -156,9 +158,7 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
       } ~
       path("customerGreeting") {
           get {
-              complete {
-                "Hello James"
+              complete("Hello James")
               }
           }
-      }
 }
