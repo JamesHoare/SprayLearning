@@ -6,14 +6,15 @@ import scala.concurrent.Future
 import com.typesafe.config.ConfigFactory
 import scala.concurrent.ExecutionContext.Implicits.global
 import spray.routing.AuthenticationFailedRejection
+import com.example.configuration.CustomerSystemConfiguration
 
 case class User(userName: String, token: String) {}
 
-trait UserAuthentication {
+trait UserAuthentication extends CustomerSystemConfiguration {
 
-  val conf = ConfigFactory.load()
+  /*val conf = ConfigFactory.load()
   lazy val configusername = conf.getString("security.username")
-  lazy val configpassword = conf.getString("security.password")
+  lazy val configpassword = conf.getString("security.password")*/
 
   def authenticateUser: ContextAuthenticator[User] = {
     ctx =>

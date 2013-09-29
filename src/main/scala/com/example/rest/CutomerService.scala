@@ -6,7 +6,6 @@ import spray.http._
 import spray.http.MediaTypes._
 import spray.routing.Directive.pimpApply
 import spray.routing.directives.CompletionMagnet.fromObject
-import com.example.domain.Customer
 import spray.httpx.Json4sSupport
 import org.json4s.{MappingException, Formats, DefaultFormats}
 import com.example.domain.Customer
@@ -17,14 +16,18 @@ import shapeless._
 import spray.routing.directives.BasicDirectives._
 import spray.util.LoggingContext
 import com.example.service.UserAuthentication
+import akka.event.slf4j.SLF4JLogging
 
-//import org.json4s.`package`.MappingException
 
-case class ReponseError(errorCode: String, errorMessage: String) {}
+// case classes
+
+case class ResponseError(errorCode: String, errorMessage: String) {}
+
+case class SomeCustomException(msg: String) extends RuntimeException(msg) {}
 
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
-class CustomerServiceActor extends Actor with CustomerService with AjaxService with CustomRejectionHandler {
+class CustomerServiceActor extends Actor with CustomerService with AjaxService with CustomRejectionHandler  {
 
 
   implicit def json4sFormats: Formats = DefaultFormats
@@ -34,7 +37,6 @@ class CustomerServiceActor extends Actor with CustomerService with AjaxService w
 
   // this actor only runs our route, but you could add
   // other things here, like request stream processing
-  // or timeout handling
   def receive = handleTimeouts orElse runRoute(handleRejections(myRejectionHandler)(handleExceptions(myExceptionHandler)(
     customerRoutes ~ ajaxRoutes)))
 
@@ -47,22 +49,22 @@ class CustomerServiceActor extends Actor with CustomerService with AjaxService w
     ExceptionHandler.apply {
       case m: MappingException => {
         respondWithMediaType(`application/json`) {
-          val errorMsg = ReponseError("MalformedBody", m.getMessage)
+          val errorMsg = ResponseError("MalformedBody", m.getMessage)
           ctx => ctx.complete(415, errorMsg)
         }
       }
       case e: SomeCustomException => ctx => {
-        val errorMsg = ReponseError("BadRequest", e.getMessage)
+        val errorMsg = ResponseError("BadRequest", e.getMessage)
         ctx.complete(400, errorMsg)
       }
       case e: Exception => ctx => {
-        val errorMsg = ReponseError("InternalServerError", e.getMessage)
+        val errorMsg = ResponseError("InternalServerError", e.getMessage)
         ctx.complete(500, errorMsg)
       }
     }
 }
 
-class SomeCustomException(msg: String) extends RuntimeException(msg)
+
 
 //http://kufli.blogspot.com/2013/08/sprayio-rest-service-api-versioning.html
 trait VersionDirectives {
@@ -77,6 +79,8 @@ trait VersionDirectives {
     }
 }
 
+
+//decouple route logic from Actor/business work
 trait AjaxService extends HttpService {
   val ajaxRoutes =
     path("search" / Segment) {
@@ -90,8 +94,8 @@ trait AjaxService extends HttpService {
     }
 }
 
-// this trait defines our service behavior independently from the service actor
-trait CustomerService extends HttpService with Json4sSupport with UserAuthentication {
+//decouple route logic from Actor/business work
+trait CustomerService extends HttpService with Json4sSupport with UserAuthentication with SLF4JLogging {
 
 
 
@@ -107,14 +111,14 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
   }
 
   val customerRoutes =
-    path("someException") {
+    path("") {
       get {
         complete {
-          throw new SomeCustomException("This is a custom Exception")
+          throw new SomeCustomException("could not support your request")
         }
       }
     } ~
-      path("addCustomer") {
+      path("customer") {
         post {
           authenticate(authenticateUser) {
             user =>
@@ -130,7 +134,7 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
           }
         }
       } ~
-      path("getCustomer" / Segment) {
+      path("customer" / Segment) {
         customerId =>
           get {
             authenticate(authenticateUser) {
@@ -146,7 +150,7 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
             }
           }
       } ~
-      path("getCustomerGreeting") {
+      path("customerGreeting") {
           get {
               complete {
                 "Hello James"

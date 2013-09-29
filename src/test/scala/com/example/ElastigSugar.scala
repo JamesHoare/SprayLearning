@@ -16,11 +16,11 @@ import scala.concurrent.Await
 import scala.concurrent.duration._
 import org.elasticsearch.indices.IndexMissingException
 import org.scalatest.{Suite, BeforeAndAfterAll}
-import com.typesafe.scalalogging.slf4j.Logging
 import org.elasticsearch.common.settings.ImmutableSettings
+import akka.event.slf4j.SLF4JLogging
 
 /** @author Stephen Samuel */
-trait ElasticSugar extends BeforeAndAfterAll with Logging {
+trait ElasticSugar extends BeforeAndAfterAll with SLF4JLogging {
 
   this: Suite =>
 
@@ -29,7 +29,7 @@ trait ElasticSugar extends BeforeAndAfterAll with Logging {
   homeDir.mkdir()
   homeDir.deleteOnExit()
   tempFile.deleteOnExit()
-  logger.info("Setting ES home dir [{}]", homeDir)
+  log.info("Setting ES home dir [{}]", homeDir)
 
   val settings = ImmutableSettings.settingsBuilder()
     .put("node.http.enabled", false)

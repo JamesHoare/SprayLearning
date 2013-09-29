@@ -2,6 +2,7 @@ package com.example.configuration
 
 import com.typesafe.config.ConfigFactory
 import scala.util.Try
+import akka.event.slf4j.SLF4JLogging
 
 /**
  *
@@ -12,7 +13,7 @@ import scala.util.Try
  *
  *
  */
-trait CustomerSystemConfiguration {
+trait CustomerSystemConfiguration extends SLF4JLogging {
   /**
    * Application config object.
    */
@@ -32,6 +33,10 @@ trait CustomerSystemConfiguration {
 
   /** Service database name. */
   lazy val dbName = Try(config.getString("db.name")).getOrElse("rest")
+
+  /** Security auth. */
+  lazy val configpassword = Try(config.getString("security.password")).getOrElse("Hoare")
+  lazy val configusername = Try(config.getString("security.username")).getOrElse("James")
 
   /** User name used to access database. */
   lazy val dbUser = Try(config.getString("db.user")).toOption.orNull
