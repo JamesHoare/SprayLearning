@@ -18,9 +18,17 @@ import spray.util.LoggingContext
 import com.example.service.UserAuthentication
 import akka.event.slf4j.SLF4JLogging
 import com.example.mysql.CustomerDAO
-import spray.caching.{Cache, LruCache}
-import scala.concurrent.duration.{FiniteDuration, Duration}
+import spray.caching.{LruCache}
+import scala.concurrent.duration.{Duration}
 import spray.routing.directives.CachingDirectives
+import spray.can.server.Stats
+import spray.can.Http
+import spray.httpx.marshalling.Marshaller
+import spray.httpx.encoding.Gzip
+import spray.util._
+import spray.http._
+import MediaTypes._
+import CachingDirectives._
 
 
 // case classes
@@ -98,11 +106,12 @@ trait AjaxService extends HttpService {
 }
 
 //decouple route logic from Actor/business work
-trait CustomerService extends HttpService with Json4sSupport with UserAuthentication with SLF4JLogging with CachingDirectives {
+trait CustomerService extends HttpService with Json4sSupport with UserAuthentication with SLF4JLogging {
 
 
-  // expiring cache
-  val customerCache = LruCache[RouteResponse](256, 100)
+  // set up cache
+  lazy val customerCache = routeCache()
+
 
   //db service
   val customerService = new CustomerDAO
@@ -147,13 +156,12 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
         }
       } ~
       path("customer" / LongNumber) {
-
         customerId =>
           get {
-            authenticate(authenticateUser) {
-              user => {
-                complete {
-                  cache(customerCache) {
+            cache(customerCache) {
+              authenticate(authenticateUser) {
+                user => {
+                  complete {
                     log.debug("Retrieving customer with id %d".format(customerId))
                     customerService.get(customerId)
                   }
