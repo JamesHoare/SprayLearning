@@ -17,6 +17,7 @@ import spray.routing.directives.BasicDirectives._
 import spray.util.LoggingContext
 import com.example.service.UserAuthentication
 import akka.event.slf4j.SLF4JLogging
+import com.example.mysql.CustomerDAO
 
 
 // case classes
@@ -29,7 +30,8 @@ case class SomeCustomException(msg: String) extends RuntimeException(msg) {}
 // we want to be able to test it independently, without having to spin up an actor
 class CustomerServiceActor extends Actor with CustomerService with AjaxService with CustomRejectionHandler  {
 
-
+  //by specifying this, no need to explicitly add expected mediatype to each path
+  //respondWithMediaType(MediaTypes.`application/json`)
   implicit def json4sFormats: Formats = DefaultFormats
   // the HttpService trait defines only one abstract member, which
   // connects the services environment to the enclosing actor or test
@@ -39,6 +41,8 @@ class CustomerServiceActor extends Actor with CustomerService with AjaxService w
   // other things here, like request stream processing
   def receive = handleTimeouts orElse runRoute(handleRejections(myRejectionHandler)(handleExceptions(myExceptionHandler)(
     customerRoutes ~ ajaxRoutes)))
+
+
 
   def handleTimeouts: Receive = {
     case Timedout(x: HttpRequest) =>
@@ -98,8 +102,11 @@ trait AjaxService extends HttpService {
 trait CustomerService extends HttpService with Json4sSupport with UserAuthentication with SLF4JLogging {
 
 
+  //db service
+  val customerService = new CustomerDAO
 
-  //http://kufli.blogspot.com/2013/08/sprayio-rest-service-api-versioning.html
+
+
   val Version = PathMatcher( """v([0-9]+)""".r)
     .flatMap {
     case vString :: HNil => {
@@ -134,17 +141,14 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
           }
         }
       } ~
-      path("customer" / Segment) {
+      path("customer" / LongNumber) {
         customerId =>
           get {
             authenticate(authenticateUser) {
               user => {
                 complete {
-                  //get customer from db using customerId as Key
-                 /* val customerDal = new CustomerDal
-                  //val customer = customerDal.findCustomer(customerId)
-                  customer*/
-                  "some customer"
+                  log.debug("Retrieving customer with id %d".format(customerId))
+                  customerService.get(customerId)
                 }
               }
             }
