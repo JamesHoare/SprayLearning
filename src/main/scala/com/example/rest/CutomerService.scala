@@ -16,6 +16,7 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import shapeless._
 import spray.routing.directives.BasicDirectives._
 import spray.util.LoggingContext
+import com.example.service.UserAuthentication
 
 //import org.json4s.`package`.MappingException
 
@@ -136,9 +137,10 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
               user => {
                 complete {
                   //get customer from db using customerId as Key
-                  val customerDal = new CustomerDal
-                  val customer = customerDal.findCustomer(customerId)
-                  customer
+                 /* val customerDal = new CustomerDal
+                  //val customer = customerDal.findCustomer(customerId)
+                  customer*/
+                  "some customer"
                 }
               }
             }
