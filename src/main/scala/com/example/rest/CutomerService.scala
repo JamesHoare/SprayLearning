@@ -18,6 +18,9 @@ import spray.util.LoggingContext
 import com.example.service.UserAuthentication
 import akka.event.slf4j.SLF4JLogging
 import com.example.mysql.CustomerDAO
+import spray.caching.{Cache, LruCache}
+import scala.concurrent.duration.{FiniteDuration, Duration}
+import spray.routing.directives.CachingDirectives
 
 
 // case classes
@@ -28,7 +31,7 @@ case class SomeCustomException(msg: String) extends RuntimeException(msg) {}
 
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
-class CustomerServiceActor extends Actor with CustomerService with AjaxService with CustomRejectionHandler  {
+class CustomerServiceActor extends Actor with CustomerService with AjaxService with CustomRejectionHandler {
 
 
   // the HttpService trait defines only one abstract member, which
@@ -39,7 +42,6 @@ class CustomerServiceActor extends Actor with CustomerService with AjaxService w
   // other things here, like request stream processing
   def receive = handleTimeouts orElse runRoute(handleRejections(myRejectionHandler)(handleExceptions(myExceptionHandler)(
     customerRoutes ~ ajaxRoutes)))
-
 
 
   def handleTimeouts: Receive = {
@@ -65,7 +67,6 @@ class CustomerServiceActor extends Actor with CustomerService with AjaxService w
       }
     }
 }
-
 
 
 //http://kufli.blogspot.com/2013/08/sprayio-rest-service-api-versioning.html
@@ -97,8 +98,11 @@ trait AjaxService extends HttpService {
 }
 
 //decouple route logic from Actor/business work
-trait CustomerService extends HttpService with Json4sSupport with UserAuthentication with SLF4JLogging {
+trait CustomerService extends HttpService with Json4sSupport with UserAuthentication with SLF4JLogging with CachingDirectives {
 
+
+  // expiring cache
+  val customerCache = LruCache[RouteResponse](256, 100)
 
   //db service
   val customerService = new CustomerDAO
@@ -106,7 +110,6 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
   //by specifying this, no need to explicitly add expected mediatype to each path
   //respondWithMediaType(MediaTypes.`application/json`)
   implicit def json4sFormats: Formats = DefaultFormats
-
 
 
   val Version = PathMatcher( """v([0-9]+)""".r)
@@ -144,21 +147,26 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
         }
       } ~
       path("customer" / LongNumber) {
+
         customerId =>
           get {
             authenticate(authenticateUser) {
               user => {
                 complete {
-                  log.debug("Retrieving customer with id %d".format(customerId))
-                  customerService.get(customerId)
+                  cache(customerCache) {
+                    log.debug("Retrieving customer with id %d".format(customerId))
+                    customerService.get(customerId)
+                  }
                 }
               }
             }
           }
       } ~
       path("customerGreeting") {
-          get {
-              complete("Hello James")
-              }
-          }
+        get {
+
+          complete("Hello James")
+        }
+
+      }
 }
