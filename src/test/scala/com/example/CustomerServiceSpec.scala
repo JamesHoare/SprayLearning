@@ -4,7 +4,7 @@ import org.specs2.mutable.Specification
 import spray.testkit.Specs2RouteTest
 import spray.http._
 import StatusCodes._
-import spray.routing.{Directives, HttpService}
+import spray.routing.{AuthenticationFailedRejection, Directives, HttpService}
 import concurrent.duration._
 import com.example.rest.{CustomerServiceActor, CustomerService}
 
@@ -33,6 +33,21 @@ class CustomerExampleSpec extends Specification  with Specs2RouteTest with Custo
         }
       }
 
+    "reject a request for GET customer without specifying credentials" in {
+      Get("/customer/1") ~> sealRoute(customerRoutes) ~> check {
+        status.toString === "500 Internal Server Error"
 
+      }
+    }
+
+    /*reject requests with a Basic Authentication header" in {
+      Get("/api/frontend/incidents") ~> addHeader(Authorization(BasicHttpCredentials("user", "password"))) ~>
+      frontendApiRoutes ~>
+      check {
+      handled must beFalse
+
+      rejection must beAnInstanceOf[AuthenticationFailedRejection]
+      }
+      }*/
   }
 }
