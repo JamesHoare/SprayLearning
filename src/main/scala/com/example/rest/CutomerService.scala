@@ -76,8 +76,6 @@ class CustomerServiceActor extends Actor with CustomerService with AjaxService w
     }
 
 
-
-
 }
 
 
@@ -114,7 +112,7 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
 
 
   // set up cache
-  lazy val customerCache = routeCache(maxCapacity = 1000, timeToLive = Duration("3 min"),timeToIdle = Duration("5 min"))
+  lazy val customerCache = routeCache(maxCapacity = 1000, timeToLive = Duration("3 min"), timeToIdle = Duration("5 min"))
 
 
   //db service
@@ -174,11 +172,11 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
             }
           }
       } ~
-      path("customerGreeting") {
-        get {
-
-          complete("Hello James")
-        }
+      path("customergreeting" / Segment) {
+        name =>
+          get {
+            complete("Hello" + name)
+          }
 
       }
 }

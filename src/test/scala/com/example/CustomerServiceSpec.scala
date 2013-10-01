@@ -19,8 +19,8 @@ class CustomerExampleSpec extends Specification  with Specs2RouteTest with Custo
 
 
   "The service" should {
-    "return a greeting for GET requests to the customerGreeting path" in {
-      Get("/customerGreeting") ~> customerRoutes ~> check {
+    "return a greeting for GET requests to the customergreeting path" in {
+      Get("/customergreeting/James") ~> customerRoutes ~> check {
         //entityAs[String] must contain("Hello James")
         status.toString() === "200 OK"
       }
