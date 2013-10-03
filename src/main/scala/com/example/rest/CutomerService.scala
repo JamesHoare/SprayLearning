@@ -177,6 +177,36 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
           get {
             complete("Hello" + name)
           }
-
+      } ~
+      path("orderTest") {
+        get {
+          parameters('id.as[Long]).as(OrderId) {
+            orderId =>
+            //get status
+              complete {
+                val askFuture = orderSystem ? orderId
+                askFuture.map {
+                  case result: TrackingOrder => {
+                    <statusResponse>
+                      <id>
+                        {result.id}
+                      </id>
+                      <status>
+                        {result.status}
+                      </status>
+                    </statusResponse>
+                  }
+                  case result: NoSuchOrder => {
+                    <statusResponse>
+                      <id>
+                        {result.id}
+                      </id>
+                      <status>ID is unknown</status>
+                    </statusResponse>
+                  }
+                }
+              }
+          }
+        }
       }
 }
