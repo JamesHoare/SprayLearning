@@ -175,7 +175,7 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
       path("customergreeting" / Segment) {
         name =>
           get {
-            complete("Hello" + name)
+            complete("Welcome" + name)
           }
       } /*~
       path("orders") {
