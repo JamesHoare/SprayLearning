@@ -24,6 +24,11 @@ object Boot extends App with SearchService with CustomerSystemConfiguration {
   setUpSearchService
 
 
+  /* Allow a user to shutdown the service easily */
+  readLine(s"Hit ENTER to exit ...${System.getProperty("line.separator")}")
+  system.shutdown()
+
+
 
 
 

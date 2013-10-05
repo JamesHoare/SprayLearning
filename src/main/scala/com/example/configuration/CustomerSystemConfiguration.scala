@@ -13,7 +13,7 @@ import akka.event.slf4j.SLF4JLogging
  *
  *
  */
-trait CustomerSystemConfiguration  {
+trait CustomerSystemConfiguration   {
   /**
    * Application config object.
    */
