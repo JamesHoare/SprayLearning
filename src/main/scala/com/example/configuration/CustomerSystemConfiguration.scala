@@ -13,7 +13,7 @@ import akka.event.slf4j.SLF4JLogging
  *
  *
  */
-trait CustomerSystemConfiguration extends SLF4JLogging {
+trait CustomerSystemConfiguration  {
   /**
    * Application config object.
    */
@@ -42,5 +42,5 @@ trait CustomerSystemConfiguration extends SLF4JLogging {
   lazy val dbUser = Try(config.getString("db.user")).toOption.orNull
 
   /** Password for specified user and database. */
-  lazy val dbPassword = Try(config.getString("db.password")).toOption.orNull
+  lazy val dbPassword = Try(config.getString("db.password")).getOrElse("password")
 }

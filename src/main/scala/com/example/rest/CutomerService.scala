@@ -112,7 +112,7 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
 
 
   // set up cache
-  lazy val customerCache = routeCache(maxCapacity = 1000, timeToLive = Duration("3 min"), timeToIdle = Duration("5 min"))
+  lazy val customerCache = routeCache(maxCapacity = 1000, timeToLive = Duration("3 min"), timeToIdle = Duration("1 min"))
 
 
   //db service
@@ -177,8 +177,8 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
           get {
             complete("Hello" + name)
           }
-      } ~
-      path("orderTest") {
+      } /*~
+      path("orders") {
         get {
           parameters('id.as[Long]).as(OrderId) {
             orderId =>
@@ -205,8 +205,8 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
                     </statusResponse>
                   }
                 }
-              }
-          }
-        }
-      }
+              }*/
+
+
+
 }

@@ -23,9 +23,7 @@ object Boot extends App with SearchService with CustomerSystemConfiguration {
 
   setUpSearchService
 
-  def stop() {
-    system.shutdown()
-  }
+
 
 
 
