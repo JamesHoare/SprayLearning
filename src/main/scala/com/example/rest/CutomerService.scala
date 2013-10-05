@@ -116,8 +116,6 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
   lazy val customerCache = routeCache(maxCapacity = 1000, timeToLive = Duration("3 min"), timeToIdle = Duration("1 min"))
 
 
-
-
   //db service
   val customerService = new CustomerDAO
 
@@ -152,9 +150,8 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
                 customerObj =>
                   complete {
                     val customer = customerObj.extract[Customer]
-                    val customerDal = new CustomerDal
-                    val id = customerDal.saveCustomer(customer)
-                    id.toString()
+                    log.debug("Creating customer: %s".format(customer))
+                    customerService.create(customer)
                   }
               }
           }

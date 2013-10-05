@@ -7,14 +7,13 @@ import com.typesafe.config.ConfigFactory
 import scala.concurrent.ExecutionContext.Implicits.global
 import spray.routing.AuthenticationFailedRejection
 import com.example.configuration.CustomerSystemConfiguration
+import com.mysql.jdbc.log.Slf4JLogger
+import akka.event.slf4j.SLF4JLogging
 
 case class User(userName: String, token: String) {}
 
-trait UserAuthentication extends CustomerSystemConfiguration {
+trait UserAuthentication extends CustomerSystemConfiguration with SLF4JLogging {
 
-  /*val conf = ConfigFactory.load()
-  lazy val configusername = conf.getString("security.username")
-  lazy val configpassword = conf.getString("security.password")*/
 
   def authenticateUser: ContextAuthenticator[User] = {
     ctx =>
@@ -22,6 +21,7 @@ trait UserAuthentication extends CustomerSystemConfiguration {
         //get username and password from the url        
         val usr = ctx.request.uri.query.get("usr").get
         val pwd = ctx.request.uri.query.get("pwd").get
+        log.debug("usr..." + usr + "pwd..." + pwd)
 
         doAuth(usr, pwd)
       }

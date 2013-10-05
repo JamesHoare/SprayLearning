@@ -9,7 +9,7 @@
     </appender>
 
     <logger name="akka" level="INFO" />
-    <logger name="spray" level="INFO" />
+    <logger name="spray" level="DEBUG" />
 
     <logger name="com.example" level="DEBUG" />
 

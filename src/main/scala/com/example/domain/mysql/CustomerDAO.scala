@@ -58,6 +58,25 @@ class CustomerDAO extends CustomerSystemConfiguration {
     }
   }
 
+
+  /**
+   * Saves customer entity into database.
+   *
+   * @param customer customer entity to
+   * @return saved customer entity
+   */
+  def create(customer: Customer): Either[Failure, Customer] = {
+    try {
+      val id = db.withSession {
+        Customers returning Customers.id insert customer
+      }
+      Right(customer.copy(id = Some(id)))
+    } catch {
+      case e: SQLException =>
+        Left(databaseError(e))
+    }
+  }
+
   /**
    * Produce database error description.
    *
