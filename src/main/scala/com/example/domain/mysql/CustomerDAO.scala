@@ -9,7 +9,7 @@ import scala.slick.driver.MySQLDriver.simple._
 import slick.jdbc.meta.MTable
 import java.sql.SQLException
 import com.example.domain.Failure
-
+import akka.event.slf4j.SLF4JLogging
 
 
 /**
@@ -22,7 +22,7 @@ import com.example.domain.Failure
  *
  *
  */
-class CustomerDAO extends CustomerSystemConfiguration {
+class CustomerDAO extends CustomerSystemConfiguration  {
 
   // init Database instance
   private val db = Database.forURL(url = "jdbc:mysql://%s:%d/%s".format(dbHost, dbPort, dbName),
@@ -67,6 +67,7 @@ class CustomerDAO extends CustomerSystemConfiguration {
    */
   def create(customer: Customer): Either[Failure, Customer] = {
     try {
+      log.debug("Creating customer: %s".format(customer))
       val id = db.withSession {
         Customers returning Customers.id insert customer
       }

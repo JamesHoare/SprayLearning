@@ -30,6 +30,27 @@ import spray.http._
 import MediaTypes._
 import CachingDirectives._
 import akka.util.Timeout
+import spray.httpx.unmarshalling._
+import spray.http.HttpRequest
+import shapeless.::
+import scala.Some
+import com.example.rest.SomeCustomException
+import spray.http.HttpResponse
+import com.example.rest.ResponseError
+import com.example.domain.Customer
+import spray.http.Timedout
+import org.json4s.MappingException
+import java.util.Date
+import java.text.{ParseException, SimpleDateFormat}
+import spray.http.HttpRequest
+import shapeless.::
+import scala.Some
+import com.example.rest.SomeCustomException
+import spray.http.HttpResponse
+import com.example.rest.ResponseError
+import com.example.domain.Customer
+import spray.http.Timedout
+import org.json4s.MappingException
 
 
 // case classes
@@ -122,6 +143,8 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
   //by specifying this, no need to explicitly add expected mediatype to each path
   //respondWithMediaType(MediaTypes.`application/json`)
   implicit def json4sFormats: Formats = DefaultFormats
+
+
 
 
   val Version = PathMatcher( """v([0-9]+)""".r)
