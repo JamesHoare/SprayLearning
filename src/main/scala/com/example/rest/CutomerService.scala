@@ -145,8 +145,6 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
   implicit def json4sFormats: Formats = DefaultFormats
 
 
-
-
   val Version = PathMatcher( """v([0-9]+)""".r)
     .flatMap {
     case vString :: HNil => {
@@ -195,41 +193,43 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
             }
           }
       } ~
-      path("customergreeting" / Segment) {
-        name =>
-          get {
-            complete("Welcome" + name)
-          }
-      } /*~
-      path("orders") {
+      path("customergreeting") {
         get {
-          parameters('id.as[Long]).as(OrderId) {
-            orderId =>
-            //get status
-              complete {
-                val askFuture = orderSystem ? orderId
-                askFuture.map {
-                  case result: TrackingOrder => {
-                    <statusResponse>
-                      <id>
-                        {result.id}
-                      </id>
-                      <status>
-                        {result.status}
-                      </status>
-                    </statusResponse>
-                  }
-                  case result: NoSuchOrder => {
-                    <statusResponse>
-                      <id>
-                        {result.id}
-                      </id>
-                      <status>ID is unknown</status>
-                    </statusResponse>
-                  }
-                }
-              }*/
-
+          parameter('name) {
+            name =>
+              complete(s"Welcome '$name'")
+          }
+        }
+      }
+  /*~
+       path("orders") {
+         get {
+           parameters('id.as[Long]).as(OrderId) {
+             orderId =>
+             //get status
+               complete {
+                 val askFuture = orderSystem ? orderId
+                 askFuture.map {
+                   case result: TrackingOrder => {
+                     <statusResponse>
+                       <id>
+                         {result.id}
+                       </id>
+                       <status>
+                         {result.status}
+                       </status>
+                     </statusResponse>
+                   }
+                   case result: NoSuchOrder => {
+                     <statusResponse>
+                       <id>
+                         {result.id}
+                       </id>
+                       <status>ID is unknown</status>
+                     </statusResponse>
+                   }
+                 }
+               }*/
 
 
 }
