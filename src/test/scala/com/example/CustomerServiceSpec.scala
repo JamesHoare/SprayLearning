@@ -7,6 +7,8 @@ import StatusCodes._
 import spray.routing.{AuthenticationFailedRejection, Directives, HttpService}
 import concurrent.duration._
 import com.example.rest.{CustomerServiceActor, CustomerService}
+import com.example.domain.Customer
+import spray.http.HttpHeaders.Date
 
 
 /**
@@ -28,8 +30,9 @@ class CustomerExampleSpec extends Specification  with Specs2RouteTest with Custo
 
 
       "return a customer for GET requests to the customer path" in {
-        Get("/customer/1?usr=James&pwd=Hoare") ~> customerRoutes ~> check {
+        Get("/customer/9?usr=James&pwd=Hoare") ~> customerRoutes ~> check {
           status.toString() === "200 OK"
+          entityAs[Customer] === Customer(Some(9),"Jess","Hoare",None)
         }
       }
 
@@ -41,14 +44,6 @@ class CustomerExampleSpec extends Specification  with Specs2RouteTest with Custo
       }
     }
 
-    /*reject requests with a Basic Authentication header" in {
-      Get("/api/frontend/incidents") ~> addHeader(Authorization(BasicHttpCredentials("user", "password"))) ~>
-      frontendApiRoutes ~>
-      check {
-      handled must beFalse
 
-      rejection must beAnInstanceOf[AuthenticationFailedRejection]
-      }
-      }*/
   }
 }
