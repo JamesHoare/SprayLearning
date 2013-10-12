@@ -1,6 +1,6 @@
 package com.example.rest
 
-import akka.actor.Actor
+import akka.actor.{ActorRef, Actor}
 import spray.routing._
 import spray.http._
 import spray.http.MediaTypes._
@@ -51,6 +51,7 @@ import com.example.rest.ResponseError
 import com.example.domain.Customer
 import spray.http.Timedout
 import org.json4s.MappingException
+import scala.xml.XML
 
 
 // case classes
@@ -58,6 +59,15 @@ import org.json4s.MappingException
 case class ResponseError(errorCode: String, errorMessage: String) {}
 
 case class SomeCustomException(msg: String) extends RuntimeException(msg) {}
+
+case class Order(customerId: String, productId: String, number: Int) {}
+
+case class OrderId(id: Long) {}
+
+case class TrackingOrder(id: Long, status: String, order: Order) {}
+
+case class NoSuchOrder(id: Long) {}
+
 
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
@@ -133,6 +143,7 @@ trait AjaxService extends HttpService {
 trait CustomerService extends HttpService with Json4sSupport with UserAuthentication with SLF4JLogging {
 
 
+
   // set up cache
   lazy val customerCache = routeCache(maxCapacity = 1000, timeToLive = Duration("3 min"), timeToIdle = Duration("1 min"))
 
@@ -165,16 +176,16 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
     } ~
       path("customer") {
         post {
-          authenticate(authenticateUser) {
-            user =>
-              entity(as[JObject]) {
-                customerObj =>
-                  complete {
-                    val customer = customerObj.extract[Customer]
-                    log.debug("Creating customer: %s".format(customer))
-                    customerService.create(customer)
-                  }
+          //authenticate(authenticateUser) {
+          //user =>
+          entity(as[JObject]) {
+            customerObj =>
+              complete {
+                val customer = customerObj.extract[Customer]
+                log.debug(s"Creating customer: %s".format(customer))
+                customerService.create(customer)
               }
+            //}
           }
         }
       } ~
@@ -200,36 +211,49 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
               complete(s"Welcome '$name'")
           }
         }
+      } /*~ path("orders") {
+      get {
+        parameters('id.as[Long]).as(OrderId) {
+          orderId =>
+          //get status
+            complete {
+              val askFuture = orderSystem ? orderId
+              askFuture.map {
+                case result: TrackingOrder => {
+                  <statusResponse>
+                    <id>
+                      {result.id}
+                    </id>
+                    <status>
+                      {result.status}
+                    </status>
+                  </statusResponse>
+                }
+                case result: NoSuchOrder => {
+                  <statusResponse>
+                    <id>
+                      {result.id}
+                    </id>
+                    <status>ID is unknown</status>
+                  </statusResponse>
+                }
+              }
+            }
+        }
       }
-  /*~
-       path("orders") {
-         get {
-           parameters('id.as[Long]).as(OrderId) {
-             orderId =>
-             //get status
-               complete {
-                 val askFuture = orderSystem ? orderId
-                 askFuture.map {
-                   case result: TrackingOrder => {
-                     <statusResponse>
-                       <id>
-                         {result.id}
-                       </id>
-                       <status>
-                         {result.status}
-                       </status>
-                     </statusResponse>
-                   }
-                   case result: NoSuchOrder => {
-                     <statusResponse>
-                       <id>
-                         {result.id}
-                       </id>
-                       <status>ID is unknown</status>
-                     </statusResponse>
-                   }
-                 }
-               }*/
-
-
+    }*/
 }
+
+object XMLConverter {
+  def createOrder(content: String): Order = {
+    val xml = XML.loadString(content)
+    val order = xml \\ "order"
+    val customer = (order \\ "customerId").text
+    val productId = (order \\ "productId").text
+    val number = (order \\ "number").text.toInt
+    new Order(customer, productId, number)
+  }
+}
+
+
+
