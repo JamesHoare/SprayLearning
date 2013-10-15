@@ -1,6 +1,6 @@
 package com.example.rest
 
-import akka.actor.{ActorRef, Actor}
+import akka.actor.{Props, ActorRef, Actor}
 import spray.routing._
 import spray.http._
 import spray.http.MediaTypes._
@@ -8,7 +8,7 @@ import spray.routing.Directive.pimpApply
 import spray.routing.directives.CompletionMagnet.fromObject
 import spray.httpx.Json4sSupport
 import org.json4s.{MappingException, Formats, DefaultFormats}
-import com.example.domain.Customer
+import com.example.domain.{CustomerActor, Customer}
 import org.json4s.JsonAST.JObject
 import com.example.dal.CustomerDal
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -37,7 +37,6 @@ import scala.Some
 import com.example.rest.SomeCustomException
 import spray.http.HttpResponse
 import com.example.rest.ResponseError
-import com.example.domain.Customer
 import spray.http.Timedout
 import org.json4s.MappingException
 import java.util.Date
@@ -48,10 +47,11 @@ import scala.Some
 import com.example.rest.SomeCustomException
 import spray.http.HttpResponse
 import com.example.rest.ResponseError
-import com.example.domain.Customer
 import spray.http.Timedout
 import org.json4s.MappingException
 import scala.xml.XML
+import akka.util.Timeout
+import scala.concurrent.duration._
 
 
 // case classes
@@ -143,6 +143,12 @@ trait AjaxService extends HttpService {
 trait CustomerService extends HttpService with Json4sSupport with UserAuthentication with SLF4JLogging {
 
 
+  import akka.pattern._
+
+  // we use the enclosing ActorContext's or ActorSystem's dispatcher for our Futures and Scheduler
+  implicit def executionContext = actorRefFactory.dispatcher
+
+  implicit val timeout = Timeout(10 seconds)
 
   // set up cache
   lazy val customerCache = routeCache(maxCapacity = 1000, timeToLive = Duration("3 min"), timeToIdle = Duration("1 min"))
@@ -150,6 +156,9 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
 
   //db service
   val customerService = new CustomerDAO
+
+
+  val customerServiceActor = actorRefFactory.actorOf(Props[CustomerActor],"customer-service-actor")
 
   //by specifying this, no need to explicitly add expected mediatype to each path
   //respondWithMediaType(MediaTypes.`application/json`)
@@ -167,10 +176,10 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
   }
 
   val customerRoutes =
-    path("") {
+    path("ask") {
       get {
         complete {
-          throw new SomeCustomException("could not support your request")
+          customerServiceActor ? "String"
         }
       }
     } ~
