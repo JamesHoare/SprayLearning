@@ -6,6 +6,7 @@ import spray.can.Http
 import com.example.search.SearchService
 import com.example.configuration.CustomerSystemConfiguration
 import com.example.rest.CustomerServiceActor
+import com.example.domain.CustomerActor
 
 /**
  * Bootstrap spray can
@@ -17,6 +18,8 @@ object Boot extends App with SearchService with CustomerSystemConfiguration {
 
   // create and start our service actor
   val restService = system.actorOf(Props[CustomerServiceActor], "customer-service")
+
+
 
   // start a new HTTP server on port 8080 with our service actor as the handler
   IO(Http) ! Http.Bind(restService, serviceHost, servicePort)

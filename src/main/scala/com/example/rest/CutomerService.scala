@@ -52,6 +52,8 @@ import org.json4s.MappingException
 import scala.xml.XML
 import akka.util.Timeout
 import scala.concurrent.duration._
+import scala.concurrent.ExecutionContext
+import ExecutionContext.Implicits.global
 
 
 // case classes
@@ -73,6 +75,10 @@ case class NoSuchOrder(id: Long) {}
 // we want to be able to test it independently, without having to spin up an actor
 class CustomerServiceActor extends Actor with CustomerService with AjaxService with CustomRejectionHandler {
 
+
+ /* //by specifying this, no need to explicitly add expected mediatype to each path
+  //respondWithMediaType(MediaTypes.`application/json`)
+  implicit def json4sFormats: Formats = DefaultFormats*/
 
   // the HttpService trait defines only one abstract member, which
   // connects the services environment to the enclosing actor or test
@@ -142,13 +148,14 @@ trait AjaxService extends HttpService {
 //decouple route logic from Actor/business work
 trait CustomerService extends HttpService with Json4sSupport with UserAuthentication with SLF4JLogging {
 
-
-  import akka.pattern._
-
+  implicit def json4sFormats: Formats = DefaultFormats
   // we use the enclosing ActorContext's or ActorSystem's dispatcher for our Futures and Scheduler
   implicit def executionContext = actorRefFactory.dispatcher
 
-  implicit val timeout = Timeout(10 seconds)
+
+
+  import akka.pattern._
+
 
   // set up cache
   lazy val customerCache = routeCache(maxCapacity = 1000, timeToLive = Duration("3 min"), timeToIdle = Duration("1 min"))
@@ -156,16 +163,14 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
 
   //db service
   val customerService = new CustomerDAO
+  implicit val timeout = Timeout(5 seconds)
+
+  val customerServiceActor = actorRefFactory.actorOf(Props[CustomerActor], "customer-service-actor")
 
 
-  val customerServiceActor = actorRefFactory.actorOf(Props[CustomerActor],"customer-service-actor")
-
-  //by specifying this, no need to explicitly add expected mediatype to each path
-  //respondWithMediaType(MediaTypes.`application/json`)
-  implicit def json4sFormats: Formats = DefaultFormats
 
 
-  val Version = PathMatcher( """v([0-9]+)""".r)
+ /* val Version = PathMatcher( """v([0-9]+)""".r)
     .flatMap {
     case vString :: HNil => {
       try Some(Integer.parseInt(vString) :: HNil)
@@ -173,13 +178,15 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
         case _: NumberFormatException => Some(1 :: HNil) //default to version 1
       }
     }
-  }
+  }*/
 
   val customerRoutes =
     path("ask") {
       get {
         complete {
-          customerServiceActor ? "String"
+          implicit val timeout = Timeout(5 seconds)
+          (customerServiceActor ? "String").mapTo[Customer]
+          //log.debug("" + future)
         }
       }
     } ~
@@ -206,7 +213,8 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
                 user => {
                   complete {
                     log.debug("Retrieving customer with id %d".format(customerId))
-                    customerService.get(customerId)
+                    //customerService.get(customerId)
+                    (customerServiceActor ? "String").mapTo[Customer]
                   }
                 }
               }
@@ -220,37 +228,38 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
               complete(s"Welcome '$name'")
           }
         }
-      } /*~ path("orders") {
-      get {
-        parameters('id.as[Long]).as(OrderId) {
-          orderId =>
-          //get status
-            complete {
-              val askFuture = orderSystem ? orderId
-              askFuture.map {
-                case result: TrackingOrder => {
-                  <statusResponse>
-                    <id>
-                      {result.id}
-                    </id>
-                    <status>
-                      {result.status}
-                    </status>
-                  </statusResponse>
-                }
-                case result: NoSuchOrder => {
-                  <statusResponse>
-                    <id>
-                      {result.id}
-                    </id>
-                    <status>ID is unknown</status>
-                  </statusResponse>
-                }
-              }
-            }
-        }
       }
-    }*/
+  /*~ path("orders") {
+       get {
+         parameters('id.as[Long]).as(OrderId) {
+           orderId =>
+           //get status
+             complete {
+               val askFuture = orderSystem ? orderId
+               askFuture.map {
+                 case result: TrackingOrder => {
+                   <statusResponse>
+                     <id>
+                       {result.id}
+                     </id>
+                     <status>
+                       {result.status}
+                     </status>
+                   </statusResponse>
+                 }
+                 case result: NoSuchOrder => {
+                   <statusResponse>
+                     <id>
+                       {result.id}
+                     </id>
+                     <status>ID is unknown</status>
+                   </statusResponse>
+                 }
+               }
+             }
+         }
+       }
+     }*/
 }
 
 object XMLConverter {

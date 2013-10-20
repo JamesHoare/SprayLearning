@@ -5,7 +5,7 @@ import scala.concurrent.duration._
 import akka.util.Timeout
 import com.example.mysql.CustomerDAO
 import spray.http.StatusCodes
-
+import akka.event.LoggingReceive
 
 
 /**
@@ -20,9 +20,14 @@ class CustomerActor extends Actor with ActorLogging
 
   //implicit val timeout = Timeout(5 seconds)
   val customerService = new CustomerDAO
+  //val customer = None
 
 
-  def receive  = {
+  def receive  = LoggingReceive {
+
     case "String" => sender ! customerService.get(1)
+
+
+
   }
 }
