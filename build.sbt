@@ -12,6 +12,7 @@ resolvers ++= Seq(
 
 libraryDependencies ++= Seq(
   "io.spray"            %   "spray-can"     	% "1.2-M8",
+   "io.spray" %%  "spray-json" % "1.2.5",
   "io.spray"            %   "spray-caching"     	% "1.2-M8",
   "io.spray"            % "spray-servlet"       % "1.2-M8",
   "io.spray"            % "spray-util"       % "1.2-M8",

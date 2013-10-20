@@ -8,7 +8,7 @@ import spray.routing.Directive.pimpApply
 import spray.routing.directives.CompletionMagnet.fromObject
 import spray.httpx.Json4sSupport
 import org.json4s.{MappingException, Formats, DefaultFormats}
-import com.example.domain.{CustomerActor, Customer}
+import com.example.domain.{Failure, CustomerServiceProxy, Customer}
 import org.json4s.JsonAST.JObject
 import com.example.dal.CustomerDal
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -70,15 +70,17 @@ case class TrackingOrder(id: Long, status: String, order: Order) {}
 
 case class NoSuchOrder(id: Long) {}
 
+case class GetCustomerByID(id: Long) {}
+
 
 // we don't implement our route structure directly in the service actor because
 // we want to be able to test it independently, without having to spin up an actor
 class CustomerServiceActor extends Actor with CustomerService with AjaxService with CustomRejectionHandler {
 
 
- /* //by specifying this, no need to explicitly add expected mediatype to each path
-  //respondWithMediaType(MediaTypes.`application/json`)
-  implicit def json4sFormats: Formats = DefaultFormats*/
+  /* //by specifying this, no need to explicitly add expected mediatype to each path
+   //respondWithMediaType(MediaTypes.`application/json`)
+   implicit def json4sFormats: Formats = DefaultFormats*/
 
   // the HttpService trait defines only one abstract member, which
   // connects the services environment to the enclosing actor or test
@@ -149,10 +151,12 @@ trait AjaxService extends HttpService {
 trait CustomerService extends HttpService with Json4sSupport with UserAuthentication with SLF4JLogging {
 
   implicit def json4sFormats: Formats = DefaultFormats
+
   // we use the enclosing ActorContext's or ActorSystem's dispatcher for our Futures and Scheduler
   implicit def executionContext = actorRefFactory.dispatcher
 
 
+  implicit val timeout = Timeout(5 seconds)
 
   import akka.pattern._
 
@@ -163,45 +167,34 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
 
   //db service
   val customerService = new CustomerDAO
-  implicit val timeout = Timeout(5 seconds)
-
-  val customerServiceActor = actorRefFactory.actorOf(Props[CustomerActor], "customer-service-actor")
 
 
+  val customerServiceProxy = actorRefFactory.actorOf(Props[CustomerServiceProxy], "customer-service-actor")
 
 
- /* val Version = PathMatcher( """v([0-9]+)""".r)
-    .flatMap {
-    case vString :: HNil => {
-      try Some(Integer.parseInt(vString) :: HNil)
-      catch {
-        case _: NumberFormatException => Some(1 :: HNil) //default to version 1
-      }
-    }
-  }*/
+  /* val Version = PathMatcher( """v([0-9]+)""".r)
+     .flatMap {
+     case vString :: HNil => {
+       try Some(Integer.parseInt(vString) :: HNil)
+       catch {
+         case _: NumberFormatException => Some(1 :: HNil) //default to version 1
+       }
+     }
+   }*/
 
   val customerRoutes =
-    path("ask") {
-      get {
-        complete {
-          implicit val timeout = Timeout(5 seconds)
-          (customerServiceActor ? "String").mapTo[Customer]
-          //log.debug("" + future)
-        }
-      }
-    } ~
       path("customer") {
         post {
-          //authenticate(authenticateUser) {
-          //user =>
-          entity(as[JObject]) {
-            customerObj =>
-              complete {
-                val customer = customerObj.extract[Customer]
-                log.debug(s"Creating customer: %s".format(customer))
-                customerService.create(customer)
+          authenticate(authenticateUser) {
+            user =>
+              entity(as[JObject]) {
+                customerObj =>
+                  complete {
+                    val customer = customerObj.extract[Customer]
+                    log.debug(s"Creating customer: %s".format(customer))
+                    customerService.create(customer)
+                  }
               }
-            //}
           }
         }
       } ~
@@ -212,9 +205,8 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
               authenticate(authenticateUser) {
                 user => {
                   complete {
-                    log.debug("Retrieving customer with id %d".format(customerId))
-                    //customerService.get(customerId)
-                    (customerServiceActor ? "String").mapTo[Customer]
+                    log.debug(s"Retrieving customer with id:  $customerId")
+                    (customerServiceProxy ? GetCustomerByID(customerId)).mapTo[Either[Customer.type, Failure.type]]
                   }
                 }
               }

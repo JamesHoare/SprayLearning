@@ -6,7 +6,7 @@ import spray.can.Http
 import com.example.search.SearchService
 import com.example.configuration.CustomerSystemConfiguration
 import com.example.rest.CustomerServiceActor
-import com.example.domain.CustomerActor
+import com.example.domain.CustomerServiceProxy
 
 /**
  * Bootstrap spray can

@@ -6,6 +6,7 @@ import akka.util.Timeout
 import com.example.mysql.CustomerDAO
 import spray.http.StatusCodes
 import akka.event.LoggingReceive
+import com.example.rest.GetCustomerByID
 
 
 /**
@@ -15,17 +16,16 @@ import akka.event.LoggingReceive
  * Project: default-7846f0
  *
  */
-class CustomerActor extends Actor with ActorLogging
+class CustomerServiceProxy extends Actor with ActorLogging
 {
 
-  //implicit val timeout = Timeout(5 seconds)
+
   val customerService = new CustomerDAO
-  //val customer = None
 
 
   def receive  = LoggingReceive {
 
-    case "String" => sender ! customerService.get(1)
+    case GetCustomerByID(customerId) => sender ! customerService.get(customerId)
 
 
 
