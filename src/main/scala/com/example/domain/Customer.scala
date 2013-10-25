@@ -13,6 +13,8 @@ import scala.slick.driver.MySQLDriver.simple._
  */
 case class Customer(id: Option[Long], firstName: String, lastName: String, birthday: Option[java.util.Date])
 
+case class GetCustomerByID(id: Long) {}
+
 /**
  * Mapped customers table object.
  */

@@ -9,6 +9,7 @@ import spray.routing.AuthenticationFailedRejection
 import com.example.configuration.CustomerSystemConfiguration
 import com.mysql.jdbc.log.Slf4JLogger
 import akka.event.slf4j.SLF4JLogging
+import spray.routing.AuthenticationFailedRejection.CredentialsRejected
 
 case class User(userName: String, token: String) {}
 
@@ -32,7 +33,7 @@ trait UserAuthentication extends CustomerSystemConfiguration with SLF4JLogging {
     Future {
       Either.cond(password == configpassword && userName == configusername,
         User(userName = userName, token = java.util.UUID.randomUUID.toString),
-        AuthenticationFailedRejection("CredentialsRejected"))
+        AuthenticationFailedRejection(CredentialsRejected,List()))
     }
   }
 }

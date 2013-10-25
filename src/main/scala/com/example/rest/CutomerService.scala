@@ -5,10 +5,9 @@ import spray.routing._
 import spray.http._
 import spray.http.MediaTypes._
 import spray.routing.Directive.pimpApply
-import spray.routing.directives.CompletionMagnet.fromObject
 import spray.httpx.Json4sSupport
 import org.json4s.{MappingException, Formats, DefaultFormats}
-import com.example.domain.{Failure, CustomerServiceProxy, Customer}
+import com.example.domain.{GetCustomerByID, Failure, CustomerServiceProxy, Customer}
 import org.json4s.JsonAST.JObject
 import com.example.dal.CustomerDal
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -70,7 +69,7 @@ case class TrackingOrder(id: Long, status: String, order: Order) {}
 
 case class NoSuchOrder(id: Long) {}
 
-case class GetCustomerByID(id: Long) {}
+
 
 
 // we don't implement our route structure directly in the service actor because
