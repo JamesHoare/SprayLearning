@@ -174,36 +174,22 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
   lazy val customerCache = routeCache(maxCapacity = 1000, timeToLive = Duration("3 min"), timeToIdle = Duration("1 min"))
 
 
-  //db service
-  val customerService = new CustomerDAO
-
-
   val customerServiceProxy = actorRefFactory.actorOf(Props[CustomerServiceProxy], "customer-service-actor")
 
-
-  /* val Version = PathMatcher( """v([0-9]+)""".r)
-     .flatMap {
-     case vString :: HNil => {
-       try Some(Integer.parseInt(vString) :: HNil)
-       catch {
-         case _: NumberFormatException => Some(1 :: HNil) //default to version 1
-       }
-     }
-   }*/
 
   val customerRoutes =
     path("customer") {
       post {
         //authenticate(authenticateUser) {
-          //user =>
-            entity(as[JObject]) {
-              customerObj =>
-                complete {
-                  val customer = customerObj.extract[Customer]
-                  log.debug(s"Creating customer: %s".format(customer))
-                  (customerServiceProxy ? CreateCustomer(customer)).mapTo[Either[Customer.type, Failure.type]]
-                }
+        //user =>
+        entity(as[JObject]) {
+          customerObj =>
+            complete {
+              val customer = customerObj.extract[Customer]
+              log.debug(s"Creating customer: %s".format(customer))
+              (customerServiceProxy ? CreateCustomer(customer)).mapTo[Either[Customer.type, Failure.type]]
             }
+        }
         //}
       }
     } ~
@@ -221,57 +207,8 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
               }
             }
           }
-      } ~
-      path("customergreeting") {
-        get {
-          parameter('name) {
-            name =>
-              complete(s"Welcome '$name'")
-          }
-        }
       }
-  /*~ path("orders") {
-       get {
-         parameters('id.as[Long]).as(OrderId) {
-           orderId =>
-           //get status
-             complete {
-               val askFuture = orderSystem ? orderId
-               askFuture.map {
-                 case result: TrackingOrder => {
-                   <statusResponse>
-                     <id>
-                       {result.id}
-                     </id>
-                     <status>
-                       {result.status}
-                     </status>
-                   </statusResponse>
-                 }
-                 case result: NoSuchOrder => {
-                   <statusResponse>
-                     <id>
-                       {result.id}
-                     </id>
-                     <status>ID is unknown</status>
-                   </statusResponse>
-                 }
-               }
-             }
-         }
-       }
-     }*/
-}
 
-object XMLConverter {
-  def createOrder(content: String): Order = {
-    val xml = XML.loadString(content)
-    val order = xml \\ "order"
-    val customer = (order \\ "customerId").text
-    val productId = (order \\ "productId").text
-    val number = (order \\ "number").text.toInt
-    new Order(customer, productId, number)
-  }
 }
 
 

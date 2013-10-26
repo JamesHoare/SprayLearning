@@ -16,18 +16,17 @@ import akka.event.LoggingReceive
  *
  *
  */
-class CustomerServiceProxy extends Actor with ActorLogging
+class CustomerServiceProxy extends Actor with CustomerDAO
 {
 
 
-  val customerService = new CustomerDAO
 
 
   def receive  = LoggingReceive {
 
-    case GetCustomerByID(customerId) => sender ! customerService.get(customerId)
+    case GetCustomerByID(customerId) => sender ! get(customerId)
 
-    case CreateCustomer(customer) => sender ! customerService.create(customer)
+    case CreateCustomer(customer) => sender ! create(customer)
 
   }
 }

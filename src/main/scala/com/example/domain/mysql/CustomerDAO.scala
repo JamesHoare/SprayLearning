@@ -22,7 +22,7 @@ import akka.event.slf4j.SLF4JLogging
  *
  *
  */
-class CustomerDAO extends CustomerSystemConfiguration  {
+trait CustomerDAO extends CustomerSystemConfiguration  {
 
   // init Database instance
   private val db = Database.forURL(url = "jdbc:mysql://%s:%d/%s".format(dbHost, dbPort, dbName),
