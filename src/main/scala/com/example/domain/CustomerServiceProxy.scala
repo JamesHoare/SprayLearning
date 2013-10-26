@@ -13,7 +13,7 @@ import akka.event.LoggingReceive
  *
  * User: jameshoare
  * Date: 14/10/2013
- * Project: default-7846f0
+ *
  *
  */
 class CustomerServiceProxy extends Actor with ActorLogging
@@ -27,7 +27,7 @@ class CustomerServiceProxy extends Actor with ActorLogging
 
     case GetCustomerByID(customerId) => sender ! customerService.get(customerId)
 
-
+    case CreateCustomer(customer) => sender ! customerService.create(customer)
 
   }
 }

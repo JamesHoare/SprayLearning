@@ -15,6 +15,8 @@ case class Customer(id: Option[Long], firstName: String, lastName: String, birth
 
 case class GetCustomerByID(id: Long) {}
 
+case class CreateCustomer(customer : Customer) {}
+
 /**
  * Mapped customers table object.
  */

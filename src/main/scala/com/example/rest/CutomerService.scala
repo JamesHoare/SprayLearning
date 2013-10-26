@@ -7,7 +7,7 @@ import spray.http.MediaTypes._
 import spray.routing.Directive.pimpApply
 import spray.httpx.Json4sSupport
 import org.json4s.{MappingException, Formats, DefaultFormats}
-import com.example.domain.{GetCustomerByID, Failure, CustomerServiceProxy, Customer}
+import com.example.domain._
 import org.json4s.JsonAST.JObject
 import com.example.dal.CustomerDal
 import scala.concurrent.ExecutionContext.Implicits.global
@@ -53,6 +53,18 @@ import akka.util.Timeout
 import scala.concurrent.duration._
 import scala.concurrent.ExecutionContext
 import ExecutionContext.Implicits.global
+import spray.http.HttpRequest
+import com.example.domain.GetCustomerByID
+import com.example.domain.Failure
+import shapeless.::
+import scala.Some
+import com.example.rest.SomeCustomException
+import spray.http.HttpResponse
+import com.example.rest.ResponseError
+import com.example.domain.Customer
+import spray.http.Timedout
+import com.example.rest.Order
+import org.json4s.MappingException
 
 
 // case classes
@@ -68,8 +80,6 @@ case class OrderId(id: Long) {}
 case class TrackingOrder(id: Long, status: String, order: Order) {}
 
 case class NoSuchOrder(id: Long) {}
-
-
 
 
 // we don't implement our route structure directly in the service actor because
@@ -182,21 +192,21 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
    }*/
 
   val customerRoutes =
-      path("customer") {
-        post {
-          authenticate(authenticateUser) {
-            user =>
-              entity(as[JObject]) {
-                customerObj =>
-                  complete {
-                    val customer = customerObj.extract[Customer]
-                    log.debug(s"Creating customer: %s".format(customer))
-                    customerService.create(customer)
-                  }
-              }
-          }
-        }
-      } ~
+    path("customer") {
+      post {
+        //authenticate(authenticateUser) {
+          //user =>
+            entity(as[JObject]) {
+              customerObj =>
+                complete {
+                  val customer = customerObj.extract[Customer]
+                  log.debug(s"Creating customer: %s".format(customer))
+                  (customerServiceProxy ? CreateCustomer(customer)).mapTo[Either[Customer.type, Failure.type]]
+                }
+            }
+        //}
+      }
+    } ~
       path("customer" / LongNumber) {
         customerId =>
           get {
