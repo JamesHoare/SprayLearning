@@ -65,6 +65,7 @@ import com.example.domain.Customer
 import spray.http.Timedout
 import com.example.rest.Order
 import org.json4s.MappingException
+import spray.routing.authentication.{BasicAuth, UserPass}
 
 
 // case classes
@@ -180,35 +181,38 @@ trait CustomerService extends HttpService with Json4sSupport with UserAuthentica
   val customerRoutes =
     path("customer") {
       post {
-        //authenticate(authenticateUser) {
-        //user =>
-        entity(as[JObject]) {
-          customerObj =>
-            complete {
-              val customer = customerObj.extract[Customer]
-              log.debug(s"Creating customer: %s".format(customer))
-              (customerServiceProxy ? CreateCustomer(customer)).mapTo[Either[Customer.type, Failure.type]]
+        authenticate(BasicAuth(myUserPassAuthenticator _, "customerservice")) {
+          user => {
+            entity(as[JObject]) {
+              customerObj =>
+                complete {
+                  val customer = customerObj.extract[Customer]
+                  log.debug(s"Creating customer: %s".format(customer))
+                  (customerServiceProxy ? CreateCustomer(customer)).mapTo[Either[Customer.type, Failure.type]]
+                }
             }
+          }
         }
-        //}
-      }
-    } ~
-      path("customer" / LongNumber) {
-        customerId =>
-          get {
-            cache(customerCache) {
-              authenticate(authenticateUser) {
-                user => {
-                  complete {
-                    log.debug(s"Retrieving customer with id:  $customerId")
-                    (customerServiceProxy ? GetCustomerByID(customerId)).mapTo[Either[Customer.type, Failure.type]]
+      } ~
+        path("customer" / LongNumber) {
+          customerId =>
+            sealRoute {
+              get {
+                cache(customerCache) {
+                  authenticate(BasicAuth(myUserPassAuthenticator _, "customerservice")) {
+                    user => {
+                      complete {
+                        log.debug(s"Retrieving customer with id:  $customerId")
+                        (customerServiceProxy ? GetCustomerByID(customerId)).mapTo[Either[Customer.type, Failure.type]]
+                      }
+                    }
                   }
                 }
               }
             }
-          }
-      }
+        }
 
+    }
 }
 
 
