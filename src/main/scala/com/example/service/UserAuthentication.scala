@@ -18,12 +18,7 @@ trait UserAuthentication extends CustomerSystemConfiguration with SLF4JLogging {
 
   def myUserPassAuthenticator(userPass: Option[UserPass]): Future[Option[String]] =
     Future {
-      if (userPass.exists(up => up.user == configusername && up.pass == configpassword)) Some("John")
+      if (userPass.exists(up => up.user == configusername && up.pass == configpassword)) Some("James")
       else None
     }
-
-
-
-
-
 }
